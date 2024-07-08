@@ -25,7 +25,7 @@ unsigned long tempoLedLigado;
 #define ESTADO_4 4
 #define ESTADO_5 5
 
-int estadoAtual = ESTADO_1; // Estado inicial
+int estadoAtual = ESTADO_0; // Estado inicial
 
 void leituraSensores() {
     // Leitura do sensor de chuva
@@ -84,6 +84,7 @@ void setup() {
 
     tempoInicial = millis();
     tempoLedLigado = millis();
+    estadoAtual=ESTADO_1;
 }
 
 void loop() {
@@ -91,6 +92,30 @@ void loop() {
     controleLed();
 
     switch (estadoAtual) {
+        case ESTADO_1:
+            // Monitora sensor de luz e sensor de chuva
+            if (valorLuz > limiteLuz) {
+                estadoAtual = ESTADO_2;
+                break;
+            } else {
+                if (digitalRead(pinSensorChuvaAnalog) || digitalRead(pinSensorChuvaDigital)) {
+                    estadoAtual = ESTADO_4;
+                    break;
+                } else {
+                    estadoAtual = ESTADO_3;
+                    break;
+                }
+            }
+     
+            if (nivelBaixo) {
+                estadoAtual = ESTADO_4;
+                break;
+            }
+     
+            if (millis() - tempoAnterior >= intervaloBomba) {
+                estadoAtual = ESTADO_5;
+            }
+            break;
         case ESTADO_2:
             delay(intervaloBomba); // Tempo de execução de 3 minutos
             estadoAtual = ESTADO_3; // Próximo estado
